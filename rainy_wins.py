@@ -1,16 +1,26 @@
 class Winning_in_the_Rain():
 
+    """ This is meant to work hand in hand with the dataframe the function
+        in weather.py produced. Outputs a dataframe with the teams as an index:
+            team (index)
+            wins
+            appearances
+            winning_rain_pct"""
+    
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
     def get_rain_wins(self):
         raining_wins = pd.concat([self.dataframe, pd.get_dummies(self.dataframe['FTR'])], axis = 1).reset_index()
-
+                
         away_games = pd.DataFrame(
             {'away rain games': raining_wins['AwayTeam'].value_counts()    })
         home_games = pd.DataFrame(
             {'home rain games': raining_wins['HomeTeam'].value_counts()    })
 
+        # creates a column to indicate who won the game, and then puts the winning
+        # team into the column. 'tie game' is the default.
+        
         raining_wins['winner'] = 'tie game'
 
         for i in range(len(raining_wins['A'])):
@@ -23,13 +33,14 @@ class Winning_in_the_Rain():
             {'wins': raining_wins['winner'].value_counts()
             })
 
+        # add a column to tally the number of games played, calculates the winning percentages.
+        
         appearances = pd.concat([away_games, home_games, total_wins], axis = 1)
         appearances['appearances'] = 0
         appearances = appearances.fillna(0)
 
         for i in range(len(appearances['home rain games'])):
             appearances['appearances'][i] = appearances['home rain games'][i] + appearances['away rain games'][i]
-
 
         winning_rain_pct = []
         for i in range(len(appearances['home rain games'])):

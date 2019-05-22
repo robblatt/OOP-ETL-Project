@@ -13,6 +13,8 @@ c.execute("""SELECT * FROM Matches;""")
 matches = pd.DataFrame(c.fetchall())
 matches.columns = [x[0] for x in c.description]
 
+# Assumed location for Berlin for the purposes of this project.
+
 berlin_lat = '52.520008'
 berlin_long = '13.404954'
 
@@ -43,11 +45,30 @@ class Weather():
 
     
     def rainy_days(self):
+        """Outputs a dataframe.
+        Columns: 'Match_ID' - integer - unique match ID
+                 'Date'     - string  - this is the date as input. The function converts it so 
+                                        the Dark Sky API can handle it.
+                 'AwayTeam' - string  - Away team's name
+                 'HomeTeam' - string  - Home team's name
+                 'FTR'      - string  - Three possible options.
+                                     'A' for a victory for the Away Team
+                                     'H' for a victory for the Home Team
+                                     'D' for a draw
+                 'rain'     - Boolean - Indicates if it was raining
+                 """
+        
+        # In order to work with the Dark Sky API, we have to convert the list of dates to a timestamp
+        
         gameDate = []
-
         for i in range(len(self.dataframe['Date'])):
             dt = parser.parse(self.dataframe['Date'][i])
             gameDate.append(dt)
+            
+        # Creates the DataFrame we'll use, adds the timestamped column,
+        # and resets the index because we are now sorting by the year.
+        # Otherwise the range(len(x)) would not work. We also create a 
+        # set of unique dates for use later on.
 
         self.dataframe['gamedate'] = gameDate
         matches_year = matches[matches["Season"] == self.year].reset_index()
@@ -58,6 +79,12 @@ class Weather():
             stamp = str(matches_year['gamedate'][date].timestamp())
             timestamp.append(stamp[:-2])
 
+        # This is the Dark Sky API call. Use a csv of the data you get to
+        # conserve API calls to easily stay under the 1k/day maximum. Using the
+        # set created earlier, you have 6 opportunities to pull all of the dates.
+        # Then we create a DataFrame of the response and filter that down to
+        # the columns we need.
+            
         the_rain = Weather(self.lat, self.long, 2011, timestamp, self.DarkSky_API)
             
         ds_df = pd.DataFrame(the_rain.get_rain())
@@ -67,6 +94,10 @@ class Weather():
              'date': ds_df['time'],
             })
 
+        # The Dark Sky data is in timestamp, so this brings it back to match
+        # the original data, create a new dataframe of the unique dates and 
+        # the rain condition.
+        
         for day in range(len(ds_df['time'])):
             ds_df['time'][day] = datetime.datetime.utcfromtimestamp(ds_df['time'][day]).strftime('%Y-%m-%d')
 
@@ -74,12 +105,14 @@ class Weather():
 
         rain['date'] = ds_df['time']
 
+        # Compare our unique dates in a loop and append the weather conditions.
+        
         for i in range(len(ds_df['precipType'])):
             if ds_df['precipType'][i] == 'rain':
                 rain.raining[i] = True
             else:
                 rain.raining[i] = False
-
+                
         rain_year = []
         for i in range(len(matches_year['Date'])):
             if matches_year['Date'][i] in list(rain.date[rain['raining'] == True]):
@@ -88,12 +121,16 @@ class Weather():
                 rain_year.append(False)
 
         matches_year['rain'] = rain_year
+        
+        # Creates the result, output as a dataframe with the columns mentioned earlier.
 
         result = matches_year[['Match_ID','Date','AwayTeam', 'HomeTeam', 'FTR', 'rain']]
 
         return result
     
 season = Weather(matches, 2011, berlin_lat, berlin_long, api_key)
+
+# Use this if you want a list of only the matches where it was raining.
 
 rainy_wins = season.rainy_days()[season.rainy_days()['rain'] == True].reset_index()
 
