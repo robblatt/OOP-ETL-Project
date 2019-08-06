@@ -1,84 +1,42 @@
 
-# Module 2 Summative Lab
+# Summative Lab for Flatiron School's Data Science Module 2 
 
-## Introduction
+## The Goal
 
-For today's section, we're going to work on a single big lab to apply everything we've learned in Module 2!
+Discover how rain effected the outcome of German Bundesliga football games during the 2011 season.
 
-## About This Lab
+## Methodology
 
-A quick note before getting started--this lab isn't like other labs you seen so far. This lab is meant to take ~8 hours to complete, so it's much longer and more challenging that the average labs you've seen so far. If you feel like this lab is challenging or that you might be struggling a bit, don't fret--that's by design! With everything we've learned about Web Scraping, APIs, and Databases, the best way to test our knowledge of it is to build something substantial! 
+- The game results came from an sqlite file from this [kaggle page](https://www.kaggle.com/laudanum/footballdelphi), which consisted of game results from 1993 - 2016 from English Premier League and German Bundesliga.
+- For the assignment, we were asked to assume that all games in the 2011 season occured in Berlin and to use the Dark Sky API to discover if it had rained during the specific game.
+- Using Python, my team (along with [LinhDan Nguyen](https://github.com/lnhdn) & [Kal Lemma](https://github.com/klemma14)), we used Pandas to evaluate, clean the data, and create visualizations, and write the data into a MongoDB database.
 
-## The Project
+![The process](https://raw.githubusercontent.com/robblatt/OOP-ETL-Project/master/Screen%20Shot%202019-08-06%20at%2010.18.39%20AM.png)
 
-In this lab, we're going to make use of everything we've learned about APIs, databases, and Object-Oriented Programming to **_Extract, Transform, and Load_** (or **_ETL_**, for short) some data from a SQL database into a MongoDB Database. 
+## Results
 
-You'll find a database containing information about soccer teams and the matches they've played in the file `database.sqlite`. For this project, our goal is to get the data we think is important from this SQL database, do some calculations and data transformation, and then store everything in a MongoDB database. 
+![animated gif of results](https://raw.githubusercontent.com/robblatt/OOP-ETL-Project/master/game%20results.gif)
 
-Let's get into the specifics of this project.
+- We were able to successfully create a MongoDB database of the wins and losses.
 
-### The Goal
+### Files
+- Football Weather Final.ipynb
+  * The final project
+  
+- Get Weather and Rain Wins Percentage.ipynb
+  * An attempt to create a dataframe of the wins/losses and cross-reference it with the rain data
 
-Start by examining the data dictionary for the SQL database we'll be working with, which comes from this [kaggle page](https://www.kaggle.com/laudanum/footballdelphi).  Familiarize yourself with the tables it contains, and what each column means. We'll be using this database to get data on each soccer team, calculate some summary statistics, and then store each in a MongoDB database. 
+- index.ipynb
+  * The original instructions for the assignment
 
-Upon completion of this lab, each unique team in this dataset should have a record in the MongoDB instance containing the following information:
+- Project 2.ipynb
+  * Contains EDA
+  
+- database.sqlite
+  * Original data
 
-* The name of the team
-* The total number of goals scored by the team during the 2011 season
-* The total number of wins the team earned during the 2011 season
-* A histogram visualization of the team's wins and losses for the 2011 season (store the visualization directly)
-* The team's win percentage on days where it was raining during games in the 2011 season. 
+- weather.py
+  * Contains the function for getting the weather for the appropriate dates from the DarkSky API
 
-#### Getting the Weather Data
-
-Note that for this last calculation, you'll need to figure out if it was raining or not during the game. The database itself does not contain this information, but it does contain the date on which the game was played. For this, you'll need to use the [DarkSky API](https://darksky.net/dev) to get the historical weather data for that day. Note that each game is played in a different location, and this information is not contained in our SQL database. However, the teams in this database are largely german, so go ahead and just use the weather in Berlin, Germany as a proxy for this information. If it was raining in Berlin on the day the game was played, count that as rain game--**_you do not need to try and figure out the actual weather at each game's location, because we don't have that information!_**
-
-#### NOTE: The DarkSky API is limited to 1000 free API calls a day, so be sure to test your model on very small samples. Otherwise, you'll hit the rate limit!
-
-## Project Architecture
-
-Unlike previous labs, this lab is more open-ended, and will require you to make design decisions and plan out your strategy for building a system with this many working parts. However, **_using Object-Oriented Programming is a requirement for this project--you must create at least 2 separate, well structured classes in your solution!_** Although it may seem easier to "just start coding", this is a classic beginner's mistake. Instead, think about separating out the different functionalities you'll need to reach your goal, and then build classes to handle each. For instance, at minimum, you'll need to:
-
-* Query the SQL database
-* Calculate summary statistics
-* Get the weather data from the DarkSky API
-* Load the data into MongoDB
-
-We **_strongly recommend_** you consider creating separate classes for handling at least some of these of these tasks.  Be sure to plan the inputs, outputs, and methods for each class before you begin coding! 
-
-**_NOTE:_** We have provided some empty classes below. You are welcome to delete them and use a different architecture for this project if you so choose.  You do not have to use each of them, they are just there to give you an idea of what you could sorts of classes you may want to consider using.
-
-### Rapid Prototyping and Refactoring
-
-It's totally okay to try to get a task working without using OOP. For instance, when experimenting with the DarkSky API for getting historical weather data, it makes sense to just write the code in the cells and rapidly iterate until you get it all working. However, once you get it working, you're not done--you should then **_Refactor_** your code into functions or classes to make your code more modular, reusable, understandable, and maintainable! 
-
-In short--do what you need to do to get each separate piece of functionality working, and then refactor it into a class after you've figured it out!
-
-### Some Final Advice
-
-You haven't built anything this big or complex thus far, so you may not yet fully realize how much trial and error goes into it. If your code keeps breaking, resist the urge to get frustrated, and just keep working. Software development is an iterative process!  No one writes perfect code that works the first time for something this involved. You're going to run into _a lot_ of small errors in this project, right up until the point where it just works, and then you're done! However, you can reduce these errors by planning out your code, and thinking about how all of the pieces fit together before you begin coding. Once you have some basic understanding of how it all will work, then you'll know what you need to build, and then all that is left is to build it!
-
-In short:
-
-* Plan ahead--you'll thank yourself later!
-* Errors and broken code aren't bad, they're normal. 
-* Keep working, and stay confident--you can do this!
-
-Good luck--we look forward to seeing your completed project!
-
-
-```python
-# You don't have to use these classes, but we recommend them as a good place to start!
-class WeatherGetter():
-    pass
-```
-
-
-```python
-class MongoHandler():
-    pass
-```
-
-# Summary
-
-In this lab, we dug deep and used everything we've learned so far about python programming, databases, HTTP requests and API calls to ETL data from a SQL database into a MongoDB instance!
+- weather.csv
+  * In order to minimize the DarkSky API calls, the csv was created
